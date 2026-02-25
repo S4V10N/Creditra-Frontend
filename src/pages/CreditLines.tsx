@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { RepayModal } from '../components/RepayModal';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -174,28 +175,28 @@ const utilizationPct = (utilized: number, limit: number) =>
 // ─── Design tokens (matching index.css vars) ──────────────────────────────────
 
 const COLOR = {
-  bg:      '#0d1117',
+  bg: '#0d1117',
   surface: '#161b22',
-  border:  '#30363d',
-  text:    '#e6edf3',
-  muted:   '#8b949e',
-  accent:  '#58a6ff',
+  border: '#30363d',
+  text: '#e6edf3',
+  muted: '#8b949e',
+  accent: '#58a6ff',
   success: '#3fb950',
   warning: '#d29922',
-  danger:  '#f85149',
+  danger: '#f85149',
 };
 
 const UTIL_COLOR: Record<UtilizationLevel, string> = {
-  low:    COLOR.success,
+  low: COLOR.success,
   medium: COLOR.warning,
-  high:   COLOR.danger,
+  high: COLOR.danger,
 };
 
 const STATUS_COLOR: Record<CreditLineStatus, { bg: string; color: string }> = {
-  Active:    { bg: 'rgba(63,185,80,0.2)',   color: COLOR.success },
-  Suspended: { bg: 'rgba(210,153,34,0.2)',  color: COLOR.warning },
-  Defaulted: { bg: 'rgba(248,81,73,0.15)',  color: COLOR.danger },
-  Closed:    { bg: 'rgba(139,148,158,0.15)', color: COLOR.muted },
+  Active: { bg: 'rgba(63,185,80,0.2)', color: COLOR.success },
+  Suspended: { bg: 'rgba(210,153,34,0.2)', color: COLOR.warning },
+  Defaulted: { bg: 'rgba(248,81,73,0.15)', color: COLOR.danger },
+  Closed: { bg: 'rgba(139,148,158,0.15)', color: COLOR.muted },
 };
 
 const RISK_COLOR = (score: number) =>
@@ -225,12 +226,12 @@ const btnBase: React.CSSProperties = {
 };
 
 const btn = {
-  ghost:   { ...btnBase } as React.CSSProperties,
+  ghost: { ...btnBase } as React.CSSProperties,
   primary: { ...btnBase, background: COLOR.accent, color: COLOR.bg, border: 'none', fontWeight: 600 } as React.CSSProperties,
   secondary: { ...btnBase, color: COLOR.text } as React.CSSProperties,
-  draw:    { ...btnBase, background: 'rgba(88,166,255,0.12)', color: COLOR.accent, borderColor: 'rgba(88,166,255,0.3)' } as React.CSSProperties,
-  repay:   { ...btnBase, background: 'rgba(63,185,80,0.12)',  color: COLOR.success, borderColor: 'rgba(63,185,80,0.3)' } as React.CSSProperties,
-  danger:  { ...btnBase, background: 'rgba(248,81,73,0.12)',  color: COLOR.danger,  borderColor: 'rgba(248,81,73,0.3)' } as React.CSSProperties,
+  draw: { ...btnBase, background: 'rgba(88,166,255,0.12)', color: COLOR.accent, borderColor: 'rgba(88,166,255,0.3)' } as React.CSSProperties,
+  repay: { ...btnBase, background: 'rgba(63,185,80,0.12)', color: COLOR.success, borderColor: 'rgba(63,185,80,0.3)' } as React.CSSProperties,
+  danger: { ...btnBase, background: 'rgba(248,81,73,0.12)', color: COLOR.danger, borderColor: 'rgba(248,81,73,0.3)' } as React.CSSProperties,
   suspend: { ...btnBase, background: 'rgba(210,153,34,0.12)', color: COLOR.warning, borderColor: 'rgba(210,153,34,0.3)' } as React.CSSProperties,
 };
 
@@ -371,8 +372,8 @@ function DetailModal({
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', borderBottom: `1px solid ${COLOR.border}` }}>
           {[
             { label: 'Credit Limit', value: fmt(creditLine.limit), color: COLOR.text },
-            { label: 'Utilized',     value: fmt(creditLine.utilized), color: UTIL_COLOR[level] },
-            { label: 'Available',    value: fmt(available), color: COLOR.success },
+            { label: 'Utilized', value: fmt(creditLine.utilized), color: UTIL_COLOR[level] },
+            { label: 'Available', value: fmt(available), color: COLOR.success },
           ].map((item, i) => (
             <div key={item.label} style={{ padding: '1rem 1.25rem', borderRight: i < 2 ? `1px solid ${COLOR.border}` : undefined }}>
               <p style={{ margin: '0 0 0.25rem', fontSize: '0.7rem', color: COLOR.muted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{item.label}</p>
@@ -480,8 +481,8 @@ function DetailModal({
           <div style={{ padding: '1rem 1.5rem', borderTop: `1px solid ${COLOR.border}`, display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
             {creditLine.status === 'Active' && (
               <>
-                <button style={btn.draw}    onClick={() => { onAction('draw', creditLine); onClose(); }}>Draw Funds</button>
-                <button style={btn.repay}   onClick={() => { onAction('repay', creditLine); onClose(); }}>Make Repayment</button>
+                <button style={btn.draw} onClick={() => { onAction('draw', creditLine); onClose(); }}>Draw Funds</button>
+                <button style={btn.repay} onClick={() => { onAction('repay', creditLine); onClose(); }}>Make Repayment</button>
                 <button style={btn.suspend} onClick={() => { onAction('suspend', creditLine); onClose(); }}>Suspend</button>
               </>
             )}
@@ -532,6 +533,7 @@ export function CreditLines() {
   const [sortDir, setSortDir] = useState<SortDirection>('desc');
   const [selectedLine, setSelectedLine] = useState<CreditLine | null>(null);
   const [confirmAction, setConfirmAction] = useState<{ action: 'close' | 'suspend'; line: CreditLine } | null>(null);
+  const [repayLine, setRepayLine] = useState<CreditLine | null>(null);
   const [loading] = useState(false);
 
   const displayed = useMemo(() => {
@@ -569,7 +571,30 @@ export function CreditLines() {
 
   const handleAction = (action: 'draw' | 'repay' | 'close' | 'suspend', line: CreditLine) => {
     if (action === 'close' || action === 'suspend') setConfirmAction({ action, line });
-    else alert(`${action === 'draw' ? 'Draw funds from' : 'Repay'} ${line.name}`);
+    else if (action === 'repay') setRepayLine(line);
+    else alert(`Draw funds from ${line.name}`);
+  };
+
+  const handleRepaySuccess = (amount: number) => {
+    if (!repayLine) return;
+    setCreditLines(prev => prev.map(cl =>
+      cl.id !== repayLine.id ? cl : {
+        ...cl,
+        utilized: Math.max(0, cl.utilized - amount),
+        updatedAt: new Date().toISOString(),
+        transactions: [
+          {
+            id: `T${Date.now()}`,
+            type: 'Repay',
+            amount,
+            date: new Date().toISOString().split('T')[0],
+            note: 'Manual repayment'
+          },
+          ...cl.transactions
+        ]
+      }
+    ));
+    setRepayLine(null);
   };
 
   const handleConfirm = () => {
@@ -603,8 +628,8 @@ export function CreditLines() {
   const clearFilters = () => { setSearch(''); setStatusFilter('All'); setUtilizationFilter('All'); };
   const hasFilters = search !== '' || statusFilter !== 'All' || utilizationFilter !== 'All';
 
-  const activeLines   = creditLines.filter(cl => cl.status === 'Active');
-  const totalLimit    = activeLines.reduce((s, cl) => s + cl.limit, 0);
+  const activeLines = creditLines.filter(cl => cl.status === 'Active');
+  const totalLimit = activeLines.reduce((s, cl) => s + cl.limit, 0);
   const totalUtilized = activeLines.reduce((s, cl) => s + cl.utilized, 0);
 
   const thStyle: React.CSSProperties = {
@@ -639,6 +664,14 @@ export function CreditLines() {
           onCancel={() => setConfirmAction(null)}
         />
       )}
+      {repayLine && (
+        <RepayModal
+          creditLine={repayLine}
+          walletBalance={150000}
+          onClose={() => setRepayLine(null)}
+          onSuccess={handleRepaySuccess}
+        />
+      )}
       {selectedLine && (
         <DetailModal
           creditLine={selectedLine}
@@ -661,10 +694,10 @@ export function CreditLines() {
       {/* Summary cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(175px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
         {[
-          { label: 'Total Credit Limit', value: fmt(totalLimit),               sub: 'across active lines',                                                    color: COLOR.accent },
-          { label: 'Total Utilized',     value: fmt(totalUtilized),             sub: `${utilizationPct(totalUtilized, totalLimit || 1)}% of limit`,            color: UTIL_COLOR[getUtilizationLevel(totalUtilized, totalLimit || 1)] },
-          { label: 'Total Available',    value: fmt(totalLimit - totalUtilized), sub: 'ready to draw',                                                          color: COLOR.success },
-          { label: 'Total Lines',        value: String(creditLines.length),     sub: `${activeLines.length} active`,                                           color: COLOR.text },
+          { label: 'Total Credit Limit', value: fmt(totalLimit), sub: 'across active lines', color: COLOR.accent },
+          { label: 'Total Utilized', value: fmt(totalUtilized), sub: `${utilizationPct(totalUtilized, totalLimit || 1)}% of limit`, color: UTIL_COLOR[getUtilizationLevel(totalUtilized, totalLimit || 1)] },
+          { label: 'Total Available', value: fmt(totalLimit - totalUtilized), sub: 'ready to draw', color: COLOR.success },
+          { label: 'Total Lines', value: String(creditLines.length), sub: `${activeLines.length} active`, color: COLOR.text },
         ].map(card => (
           <div key={card.label} className="card" style={{ marginBottom: 0 }}>
             <p style={{ margin: '0 0 0.4rem', fontSize: '0.7rem', color: COLOR.muted, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 500 }}>{card.label}</p>
@@ -719,14 +752,14 @@ export function CreditLines() {
                 <tr>
                   {[
                     { label: 'Credit Line', field: null },
-                    { label: 'Status',      field: 'status' as SortField },
-                    { label: 'Limit',       field: 'limit' as SortField },
-                    { label: 'Utilized',    field: 'utilization' as SortField },
-                    { label: 'Available',   field: null },
-                    { label: 'APR',         field: 'apr' as SortField },
-                    { label: 'Risk Score',  field: 'riskScore' as SortField },
-                    { label: 'Updated',     field: 'updatedAt' as SortField },
-                    { label: 'Actions',     field: null },
+                    { label: 'Status', field: 'status' as SortField },
+                    { label: 'Limit', field: 'limit' as SortField },
+                    { label: 'Utilized', field: 'utilization' as SortField },
+                    { label: 'Available', field: null },
+                    { label: 'APR', field: 'apr' as SortField },
+                    { label: 'Risk Score', field: 'riskScore' as SortField },
+                    { label: 'Updated', field: 'updatedAt' as SortField },
+                    { label: 'Actions', field: null },
                   ].map(col => (
                     <th
                       key={col.label}
@@ -777,10 +810,10 @@ export function CreditLines() {
                     {/* Actions */}
                     <td style={{ ...tdStyle }}>
                       <div style={{ display: 'flex', gap: '0.375rem', flexWrap: 'wrap' }}>
-                        <button style={btn.ghost}  onClick={() => setSelectedLine(cl)}>Details</button>
+                        <button style={btn.ghost} onClick={() => setSelectedLine(cl)}>Details</button>
                         {cl.status === 'Active' && (
                           <>
-                            <button style={btn.draw}  onClick={() => handleAction('draw', cl)}>Draw</button>
+                            <button style={btn.draw} onClick={() => handleAction('draw', cl)}>Draw</button>
                             <button style={btn.repay} onClick={() => handleAction('repay', cl)}>Repay</button>
                           </>
                         )}
