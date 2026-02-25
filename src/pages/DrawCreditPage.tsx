@@ -9,7 +9,7 @@ import { TransactionStatus } from "@/components/TransactionStatus";
 import { CreditLine, DrawStep, Transaction } from "@/types/draw-credit.types";
 import { mockCreditLines } from "@/lib/draw-credit-mock-data";
 
-export default function Home() {
+export default function DrawCreditPage() {
   const [step, setStep] = useState<DrawStep>("select");
   const [selectedCreditLine, setSelectedCreditLine] =
     useState<CreditLine | null>(null);
