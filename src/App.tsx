@@ -3,6 +3,7 @@ import { Dashboard } from './pages/Dashboard';
 import { CreditLines } from './pages/CreditLines';
 import { WalletProvider } from './context/WalletContext';
 import { WalletButton } from './components/WalletButton';
+import { RequestEvaluation } from './pages/RequestEvaluation';
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
             <nav>
               <Link to="/">Dashboard</Link>
               <Link to="/credit-lines">Credit Lines</Link>
+              <Link to="/open-credit">Open Credit Line</Link>
             </nav>
             <WalletButton />
           </header>
@@ -21,6 +23,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/credit-lines" element={<CreditLines />} />
+              <Route path="/open-credit" element={<RequestEvaluation />} />
             </Routes>
           </main>
         </div>
