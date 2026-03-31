@@ -1,10 +1,12 @@
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import { Dashboard } from "./pages/Dashboard";
-//import { CreditLines } from "./pages/CreditLines"  causing error;
+import CreditLines from "./pages/CreditLines";
 import { WalletProvider } from "./context/WalletContext";
 import { WalletButton } from "./components/WalletButton";
 import DrawCreditPage from "./pages/DrawCreditPage";
+import { TransactionHistory } from "./pages/TransactionHistory";
 import { RequestEvaluation } from "./pages/RequestEvaluation";
+
 function App() {
   return (
     <WalletProvider>
@@ -16,6 +18,7 @@ function App() {
             </Link>
             <nav>
               <Link to="/">Dashboard</Link>
+              <Link to="/transactions">Transactions</Link>
               <Link to="/credit-lines">Credit Lines</Link>
               <Link to="/open-credit">Open Credit Line</Link>
             </nav>
@@ -24,6 +27,7 @@ function App() {
           <main className="main">
             <Routes>
               <Route path="/" element={<Dashboard />} />
+              <Route path="/transactions" element={<TransactionHistory />} />
               <Route path="/draw-credit" element={<DrawCreditPage />} />
              {/*<Route path="/login" element={<CreditLines />} />  causing error*/}
               <Route path="/open-credit" element={<RequestEvaluation />} />
